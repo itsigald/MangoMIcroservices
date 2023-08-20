@@ -1,0 +1,129 @@
+### request per insert di un prodotto dal cart
+POST https://localhost:7004/api/CartAPI/CartUpsert
+content-type: application/json
+
+{
+  "cartHeader": {
+    "cartHeaderId": 0,
+    "userId": "1001",
+    "couponCode": null,
+    "discount": 0,
+    "cartTotal": 5
+  },
+  "cartDetails": [
+    {
+      "cartDetailsId": 0,
+      "cartHeaderId": 0,
+      "productId": 8,
+      "quantity": 1
+    }
+  ]
+}
+
+### request per aggiungere un prodotto al carrello esistente
+POST https://localhost:7004/api/CartAPI/CartUpsert
+content-type: application/json
+
+{
+  "cartHeader": {
+    "cartHeaderId": 1,
+    "userId": "1000",
+    "couponCode": null,
+    "discount": 0,
+    "cartTotal": 2
+  },
+  "cartDetails": [
+    {
+      "cartDetailsId": 1,
+      "cartHeaderId": 1,
+      "productId": 4,
+      "quantity": 3
+    }
+  ]
+}
+
+### request per aumentare di quantita un prodotto esistente nel carrello esistente
+POST https://localhost:7004/api/CartAPI/CartUpsert
+content-type: application/json
+
+{
+  "cartHeader": {
+    "cartHeaderId": 4,
+    "userId": "1000",
+    "couponCode": null,
+    "discount": 0,
+    "cartTotal": 2
+  },
+  "cartDetails": [
+    {
+      "cartDetailsId": 0,
+      "cartHeaderId": 4,
+      "productId": 5,
+      "quantity": 1
+    }
+  ]
+}
+
+### request per nuovo carrello con due prodotti
+POST https://localhost:7004/api/CartAPI/CartUpsert
+content-type: application/json
+
+{
+  "cartHeader": {
+    "cartHeaderId": 0,
+    "userId": "1002",
+    "couponCode": null,
+    "discount": 0,
+    "cartTotal": 3
+  },
+  "cartDetails": [
+    {
+      "cartDetailsId": 0,
+      "cartHeaderId": 0,
+      "productId": 1,
+      "quantity": 1
+    },
+    {
+      "cartDetailsId": 0,
+      "cartHeaderId": 0,
+      "productId": 2,
+      "quantity": 2
+    },
+    {
+      "cartDetailsId": 0,
+      "cartHeaderId": 0,
+      "productId": 3,
+      "quantity": 1
+    }
+  ]
+}
+
+### request per cancellare un prodotto dal cestino. Se è l'ultimo cancella anche la header
+POST https://localhost:7004/api/CartAPI/RemoveCart
+content-type: application/json
+
+10
+
+
+### request applicare un coupon di sconto ad un cart
+POST https://localhost:7004/api/CartAPI/ApplyCoupon
+content-type: application/json
+
+{
+  "cartHeaderId": 2,
+  "userId": "1001",
+  "couponCode": "10OFF"
+}
+
+
+### retrieve cart by user
+GET https://localhost:7004/api/CartAPI/GetCart/1001
+
+
+### retrieve cart by user e by cart ID
+GET https://localhost:7004/api/CartAPI/GetCart/1001/2
+
+
+### retrieve all coupons
+GET https://localhost:7001/api/CouponAPI/CouponGetAll HTTP/1.1
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiRGFuaWxvIiwidW5pcXVlX25hbWUiOiIwMDAwMDAwMSIsImVtYWlsIjoiZGFuaWxvQGVtYWlsLml0Iiwic3ViIjoiZDM0NDBjMDAtZTBjOS00NzU0LWJkY2ItNWYxM2EwODc3YzlmIiwicm9sZSI6IkFETUlOIiwibmJmIjoxNjkyNTMxNzM0LCJleHAiOjE2OTMxMzY1MzQsImlhdCI6MTY5MjUzMTczNCwiaXNzIjoibWFuZ28tYXV0aC11c2VyIiwiYXVkIjoibWFuZ28tY2xpZW50In0.ebg1yBcnOpXrVrGlkMh5d_ttqZlQhe-guxhvBsGrJeI

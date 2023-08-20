@@ -1,0 +1,55 @@
+﻿@model IEnumerable<ProductDto>
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">Product List</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row pb-3">
+            <div class="col-6"></div>
+            <div class="col-6 text-end">
+                <a class="btn btn-outline-primary" asp-action="ProductCreate"><i class="bi bi-plus-square"></i> Create new product</a>
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-warning">Name</th>
+                    <th class="text-warning">Price</th>
+                    <th class="text-warning">Category</th>
+                    <th class="text-warning">Description</th>
+                    <th class="text-warning">Operation</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="col-1">@item.Name</td>
+                            <td class="col-1">@((item.Price).ToString("c"))</td>
+                            <td>@((item.CategoryName))</td>
+                            <td>@((item.Description))</td>
+                            <td class="col-2">
+                                <a asp-action="ProductUpdate" asp-route-productId="@item.ProductId" class="btn btn-info" title="Update @item.Name">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a asp-action="ProductDelete" asp-route-productId="@item.ProductId" class="btn btn-danger" title="Delete @item.Name">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                <a asp-action="ProductDetails" asp-route-productId="@item.ProductId" class="btn btn-success" title="Details @item.Name">
+                                    <i class="bi bi-app-indicator"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

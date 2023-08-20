@@ -1,0 +1,54 @@
+﻿@model ProductDetailDto
+
+<form method="post" asp-action="ProductDetail">
+    @if(Model != null)
+    {
+        <input asp-for="@Model.ProductId" hidden />
+        <div class="p-4">
+            <div class="card container" style="border:solid 1px #808080">
+                <div class="card-header bg-dark text-light row" style="border-radius: 0px">
+                    <div class="col-12 col-md-6">
+                        <h1 class="text-white">@Model.Name</h1>
+                    </div>
+                    <div class="col-12 col-md-6 text-end">
+                        <h1 class="text-white">@string.Format("{0:c}", Model.Price)</h1>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="container rounded p-2">
+                        <div class="row">
+                            <div class="col-12 col-lg-4 p-1 text-center">
+                                <img src="@Model.ImageUrl" style="border-radius:35px;" width="100%" class="rounded" />
+                            </div>
+                            <div class="col-12 col-lg-8">
+                                <div class="row pl-3">
+                                    <div class="col-12">
+                                        <span class="badge bg-primary text-success p-3 border">@Model.CategoryName</span>
+                                        <p class="text-secondary pt-3">@Html.Raw(Model.Description)</p>
+                                    </div>
+                                </div>
+                                <div class="row mx-0">
+                                    <label>Number of Product</label>
+                                    <input asp-for="Quantity" class="form-control w-25" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer row bg-dark">
+                    <div class="col-12 col-md-6 pb-1">
+                        <a asp-action="Index" class="btn btn-success btn-square form-control btn-lg" style="height:50px">Back to list</a>
+                    </div>
+                    <div class="col-12 col-md-6 pb-1">
+                        <button type="submit" class="btn btn-dark btn-square form-control btn-lg" style="height:50px">Add to cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -15,7 +15,7 @@ namespace Mango.Web.Services
             _settings = settings;
         }
 
-        public async Task<ResponseDto?> GetAllShoppingCartsAsync(string userId)
+        public async Task<ResponseDto?> GetShoppingCartsAsync(string userId)
         {
             return await _service.SendAsync(new RequestDto
             {
@@ -53,12 +53,12 @@ namespace Mango.Web.Services
             });
         }
 
-        public async Task<ResponseDto?> RemoveShoppingCartAsync(int cartId)
+        public async Task<ResponseDto?> RemoveShoppingCartAsync(int cartDetailsId)
         {
             return await _service.SendAsync(new RequestDto
             {
                 ApiType = Utility.ApiType.POST,
-                Data = cartId,
+                Data = cartDetailsId,
                 Url = $"{_settings.ShoppingCartUrlBase}{_settings.ShoppingCartAPI}/RemoveCart"
             });
         }

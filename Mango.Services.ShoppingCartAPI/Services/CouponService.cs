@@ -20,6 +20,7 @@ namespace Mango.Services.ShoppingCartAPI.Services
         {
             using (var client = _httpClientFactory.CreateClient("Coupon"))
             {
+
                 var response = await client.GetAsync($"/api/CouponAPI/GetByCode/{couponCode}");
 
                 if (response.IsSuccessStatusCode)

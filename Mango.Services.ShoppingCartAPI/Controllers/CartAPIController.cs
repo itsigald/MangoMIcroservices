@@ -87,51 +87,39 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         [HttpGet("GetCart/{userId}")]
         public async Task<ResponseDto> GetCart(string userId)
         {
-            List<CartDto> listCartDto = new List<CartDto>();
-
             try
             {
-                var cartHeadersDto = _mapper.Map<IEnumerable<CartHeaderDto>>(await _context.CartHeaders
-                    .Where(x => x.UserId == userId && x.IsDeleted == false)
-                    .ToListAsync());
+                var cartHeadersDto = _mapper.Map<CartHeaderDto>(await _context.CartHeaders
+                    .FirstOrDefaultAsync(x => x.UserId == userId && x.IsDeleted == false && x.IsOpen == true));
                 
                 var cartDetailsDto = _mapper.Map<IEnumerable<CartDetailsDto>>(await _context.CartDetails
-                    .Where(x => cartHeadersDto.Select(p => p.CartHeaderId).ToList()
-                    .Contains(x.CartHeaderId) && x.IsDeleted == false)
+                    .Where(x => x.CartHeaderId == cartHeadersDto.CartHeaderId && x.IsDeleted == false)
                     .ToListAsync());
 
                 var products = await _productService.GetProducts();
 
-                foreach (var ch in cartHeadersDto.GroupBy(p => p.CartHeaderId))
+                foreach (var item in cartDetailsDto)
                 {
-                    var cartDetail = cartDetailsDto.Where(x => x.CartHeaderId == ch.Key).ToList();
-                    var cartHeader = ch.First();
-
-                    foreach (var item in cartDetail)
-                    {
-                        item.Product = products.FirstOrDefault(x => x.ProductId == item.ProductId);
-                        cartHeader.CartTotal += item.Quantity * (item.Product == null ? 0 : item.Product.Price);
-                    }
-
-                    if(!string.IsNullOrEmpty(cartHeader.CouponCode))
-                    {
-                        CouponDto coupon = await _couponService.GetCoupon(cartHeader.CouponCode);
-
-                        if(coupon != null && cartHeader.CartTotal > coupon.MinAmount)
-                        {
-                            cartHeader.CartTotal -= Convert.ToDecimal(coupon.DiscountAmount);
-                            cartHeader.Discount = Convert.ToDecimal(coupon.DiscountAmount);
-                        }
-                    }
-
-                    listCartDto.Add(new CartDto
-                    {
-                        CartHeader = cartHeader,
-                        CartDetails = cartDetail
-                    });
+                    item.Product = products.FirstOrDefault(x => x.ProductId == item.ProductId);
+                    cartHeadersDto.CartTotal += item.Quantity * (item.Product == null ? 0 : item.Product.Price);
                 }
 
-                _responseDto.Result = listCartDto;
+                if(!string.IsNullOrEmpty(cartHeadersDto.CouponCode))
+                {
+                    CouponDto coupon = await _couponService.GetCoupon(cartHeadersDto.CouponCode);
+
+                    if(coupon != null && cartHeadersDto.CartTotal > coupon.MinAmount)
+                    {
+                        cartHeadersDto.CartTotal -= Convert.ToDecimal(coupon.DiscountAmount);
+                        cartHeadersDto.Discount = Convert.ToDecimal(coupon.DiscountAmount);
+                    }
+                }
+
+                _responseDto.Result = new CartDto
+                {
+                    CartHeader = cartHeadersDto,
+                    CartDetails = cartDetailsDto
+                };
             }
             catch (Exception ex)
             {
@@ -197,11 +185,12 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                         {
                             foreach (var cd in cartDto.CartDetails)
                             {
-                                var cartItem = cartDetails.FirstOrDefault(i => i.ProductId == cd.ProductId && i.Quantity != cd.Quantity);
+                                var cartItem = cartDetails.FirstOrDefault(i => i.ProductId == cd.ProductId);
 
                                 if(cartItem != null)
                                 {
                                     cartItem.Quantity = cd.Quantity;
+                                    cartItem.IsDeleted = false;
                                     _context.CartDetails.Update(cartItem);
                                 }
                             }
@@ -287,42 +276,12 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             {
                 var cartFromDb = await _context.CartHeaders.FirstOrDefaultAsync(c => c.UserId == applyCouponDto.UserId && c.CartHeaderId == applyCouponDto.CartHeaderId);
 
-                if (cartFromDb != null && !string.IsNullOrEmpty(applyCouponDto.CouponCode))
+                if (cartFromDb != null)
                 {
                     cartFromDb.CouponCode = applyCouponDto.CouponCode;
                     _context.CartHeaders.Update(cartFromDb);
                     await _context.SaveChangesAsync();
                     
-                    _responseDto.Result = true;
-                }
-                else
-                {
-                    _responseDto.IsSuccess = false;
-                    _responseDto.Message = $"The Cart doesn't exists";
-                }
-            }
-            catch (Exception ex)
-            {
-                _responseDto.IsSuccess = false;
-                _responseDto.Message = ex.Message;
-            }
-
-            return _responseDto;
-        }
-
-        [HttpPost("RemoveCoupon")]
-        public async Task<ResponseDto> RemoveCoupon([FromBody] RemoveCouponDto removeCouponDto)
-        {
-            try
-            {
-                var cartDto = await _context.CartHeaders.FirstOrDefaultAsync(c => c.UserId == removeCouponDto.UserId && c.CartHeaderId == removeCouponDto.CartHeaderId);
-
-                if (cartDto != null)
-                {
-                    cartDto.CouponCode = null;
-                    _context.CartHeaders.Update(cartDto);
-                    await _context.SaveChangesAsync();
-
                     _responseDto.Result = true;
                 }
                 else

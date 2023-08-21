@@ -6,8 +6,8 @@ using AutoMapper;
 using Mango.Services.ShoppingCartAPI;
 using Mango.Services.ShoppingCartAPI.Dtos;
 using Mango.Services.ShoppingCartAPI.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Mango.Services.ShoppingCartAPI.Services;
+using Mango.Services.ShoppingCartAPI.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +18,13 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
 
-var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<BackendApiAuthenticationHttpClientHandler>();
 
+var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 builder.AddAppAuthentication(appSettings!);
 
 builder.Services.AddSingleton(mapper);
@@ -31,12 +33,12 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddHttpClient("Product", opt =>
 {
     opt.BaseAddress = new Uri(appSettings!.Services.ProductAPI);
-});
+}).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();
 
 builder.Services.AddHttpClient("Coupon", opt =>
 {
     opt.BaseAddress = new Uri(appSettings!.Services.CouponAPI);
-});
+}).AddHttpMessageHandler<BackendApiAuthenticationHttpClientHandler>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

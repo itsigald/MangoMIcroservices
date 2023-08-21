@@ -73,6 +73,8 @@ namespace Mango.Web.Controllers
         [ActionName("ProductDetail")]
         public async Task<IActionResult> ProductDetail(ProductDetailDto productDto)
         {
+            int p = productDto.ProductId;
+
             CartDto cart = new CartDto
             {
                 CartHeader = new CartHeaderDto

@@ -31,7 +31,7 @@ namespace Mango.Web.Services
             return await _service.SendAsync(new RequestDto
             {
                 ApiType = Utility.ApiType.GET,
-                Url = $"{_settings.ProductUrlBase}{_settings.ProductAPI}/ProductById/{productId}"
+                Url = $"{_settings.ProductUrlBase}{_settings.ProductAPI}/{productId}"
             });
         }
 

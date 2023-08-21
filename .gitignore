@@ -5,8 +5,12 @@
 /youtube.txt
 /.vs
 /Mango.Services.ProductAPI/obj
+/Mango.Services.ProductAPI/bin
 /Mango.Services.AuthAPI/obj
+/Mango.Services.AuthAPI/bin
 /Mango.Services.CouponAPI/obj
+/Mango.Services.CouponAPI/bin
 /Mango.Services.ShoppingCartAPI/obj
+/Mango.Services.ShoppingCartAPI/bin
 /Mango.Web/obj
-/Mango.Service.ProductAPI/obj/Debug/net7.0
+/Mango.Web/bin

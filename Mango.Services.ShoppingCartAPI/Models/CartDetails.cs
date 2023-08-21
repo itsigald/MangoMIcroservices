@@ -21,6 +21,6 @@ namespace Mango.Services.ShoppingCartAPI.Models
 
         public int Quantity { get; set; }
 
-        public bool Deleted { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
     }
 }

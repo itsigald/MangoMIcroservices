@@ -24,6 +24,8 @@ namespace Mango.Services.ShoppingCartAPI.Models
 
         public DateTime CartInsert { get; set; } = DateTime.Now;
 
-        public bool Deleted { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+
+        public bool IsOpen { get; set; } = false;
     }
 }

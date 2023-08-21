@@ -17,5 +17,7 @@ namespace Mango.Services.ShoppingCartAPI.Dtos
         public decimal CartTotal { get; set; }
 
         public DateTime CartInsert { get; set; }
+
+        public bool IsOpen { get; set; }
     }
 }

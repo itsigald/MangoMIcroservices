@@ -40,12 +40,12 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 var cartHeader = _mapper.Map<CartHeaderDto>(await _context.CartHeaders
-                    .FirstOrDefaultAsync(x => x.UserId == userId && x.Deleted == false && x.CartHeaderId == cartId));
+                    .FirstOrDefaultAsync(x => x.UserId == userId && x.IsDeleted == false && x.CartHeaderId == cartId));
 
                 if(cartHeader != null)
                 {
                     var cartDetails = _mapper.Map<IEnumerable<CartDetailsDto>>(await _context.CartDetails
-                        .Where(x => x.Deleted == false && x.CartHeaderId == cartId)
+                        .Where(x => x.IsDeleted == false && x.CartHeaderId == cartId)
                         .ToListAsync());
 
                     foreach (var item in cartDetails)
@@ -92,12 +92,12 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             try
             {
                 var cartHeadersDto = _mapper.Map<IEnumerable<CartHeaderDto>>(await _context.CartHeaders
-                    .Where(x => x.UserId == userId && x.Deleted == false)
+                    .Where(x => x.UserId == userId && x.IsDeleted == false)
                     .ToListAsync());
                 
                 var cartDetailsDto = _mapper.Map<IEnumerable<CartDetailsDto>>(await _context.CartDetails
                     .Where(x => cartHeadersDto.Select(p => p.CartHeaderId).ToList()
-                    .Contains(x.CartHeaderId) && x.Deleted == false)
+                    .Contains(x.CartHeaderId) && x.IsDeleted == false)
                     .ToListAsync());
 
                 var products = await _productService.GetProducts();
@@ -153,14 +153,16 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             {
                 try
                 {
+                    //c.CartHeaderId == cartDto.CartHeader.CartHeaderId && 
                     var cartHeader = await _context.CartHeaders
-                        .FirstOrDefaultAsync(c => c.CartHeaderId == cartDto.CartHeader.CartHeaderId && c.UserId == cartDto.CartHeader.UserId);
+                        .FirstOrDefaultAsync(c => c.UserId == cartDto.CartHeader.UserId && c.IsOpen == true);
 
                     if(cartHeader == null)
                     {
                         CartHeader cartH = _mapper.Map<CartHeader>(cartDto.CartHeader);
 
                         cartH.CartInsert = DateTime.Now;
+                        cartH.IsOpen = true;
 
                         _context.CartHeaders.Add(cartH);
                         await _context.SaveChangesAsync();
@@ -184,7 +186,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                     }
                     else
                     {
-                        var cartDetails = await _context.CartDetails.Where(c => c.CartHeaderId == cartDto.CartHeader.CartHeaderId).ToListAsync();
+                        var cartDetails = await _context.CartDetails.Where(c => c.CartHeaderId == cartHeader.CartHeaderId).ToListAsync();
 
                         var detailsInDb = cartDetails.Select(c => c.ProductId).ToList();
                         var detailsCart = cartDto.CartDetails.Select(d => d.ProductId).ToList();
@@ -213,7 +215,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
 
                             foreach (var item in cartDetailsNew)
                             {
-                                item.CartHeaderId = cartDto.CartHeader.CartHeaderId;
+                                item.CartHeaderId = cartHeader.CartHeaderId;
                                 _context.CartDetails.Add(item);
                             }
                             
@@ -243,9 +245,9 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
 
                 if(cartDetails != null)
                 {
-                    int countItemInDb = await _context.CartDetails.CountAsync(p => p.CartHeaderId == cartDetails.CartHeaderId && p.Deleted == false);
+                    int countItemInDb = await _context.CartDetails.CountAsync(p => p.CartHeaderId == cartDetails.CartHeaderId && p.IsDeleted == false);
 
-                    cartDetails.Deleted = true;
+                    cartDetails.IsDeleted = true;
                     _context.CartDetails.Update(cartDetails);
 
                     if(countItemInDb == 1)
@@ -254,7 +256,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
 
                         if(cartHhader != null)
                         {
-                            cartHhader.Deleted = true;
+                            cartHhader.IsDeleted = true;
                             _context.CartHeaders.Update(cartHhader!);
                         }
                     }

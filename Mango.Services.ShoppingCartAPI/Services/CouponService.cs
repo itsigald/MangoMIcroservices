@@ -1,4 +1,5 @@
 ﻿using Mango.Services.ShoppingCartAPI.Dtos;
+using Microsoft.IdentityModel.Tokens;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -15,7 +16,7 @@ namespace Mango.Services.ShoppingCartAPI.Services
             _jsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
-        public async Task<CouponDto> GetCoupon(string couponCode)
+        public async Task<CouponDto?> GetCoupon(string couponCode)
         {
             using (var client = _httpClientFactory.CreateClient("Coupon"))
             {
@@ -27,9 +28,9 @@ namespace Mango.Services.ShoppingCartAPI.Services
 
                     if (!string.IsNullOrEmpty(contextString))
                     {
-                        ResponseDto responseDto = JsonSerializer.Deserialize<ResponseDto>(contextString, _jsonSerializerOptions);
+                        ResponseDto? responseDto = JsonSerializer.Deserialize<ResponseDto>(contextString, _jsonSerializerOptions);
 
-                        if (responseDto!.IsSuccess)
+                        if (responseDto != null && responseDto.IsSuccess)
                         {
                             return JsonSerializer.Deserialize<CouponDto>(Convert.ToString(responseDto.Result), _jsonSerializerOptions);
                         }

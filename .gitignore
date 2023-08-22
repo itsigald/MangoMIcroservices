@@ -14,3 +14,8 @@
 /Mango.Services.ShoppingCartAPI/bin
 /Mango.Web/obj
 /Mango.Web/bin
+/BusMessageEmulator/docker-compose.yml
+/Mango.MessageBus/bin/Debug/net7.0
+/Mango.MessageBus/obj
+/Mango.Services.EmailAPI/bin/Debug/net7.0
+/Mango.Services.EmailAPI/obj

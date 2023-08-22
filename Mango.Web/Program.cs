@@ -1,3 +1,4 @@
+using Mango.MessageBus;
 using Mango.Web.Interfaces;
 using Mango.Web.Models;
 using Mango.Web.Services;
@@ -25,6 +26,8 @@ builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+
+builder.Services.AddScoped<IMessageBus, MessageBus>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(opt =>
 {

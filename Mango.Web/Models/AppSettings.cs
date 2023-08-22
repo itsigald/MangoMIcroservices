@@ -18,6 +18,7 @@ namespace Mango.Web.Models
         private string? _shoppingCartAPI;
 
         private List<string> _roles;
+        private string? _emailFrom;
 
         public AppSettings(Settings? settings)
         {
@@ -39,6 +40,8 @@ namespace Mango.Web.Models
             _shoppingCartAPI = settings.ShoppingCartAPI;
 
             _roles = settings.Roles;
+
+            _emailFrom = settings.EmailFrom;
         }
         
         public string? CouponUrlBase => _couponUrlBase;
@@ -54,5 +57,7 @@ namespace Mango.Web.Models
         public string? ShoppingCartAPI => _shoppingCartAPI;
 
         public List<string> Roles => _roles;
+
+        public string? EmailFrom => _emailFrom;
     }
 }

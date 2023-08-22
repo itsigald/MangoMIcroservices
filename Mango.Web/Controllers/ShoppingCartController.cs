@@ -1,8 +1,11 @@
-﻿using Mango.Web.Models;
+﻿using Mango.MessageBus;
+using Mango.Web.Interfaces;
+using Mango.Web.Models;
 using Mango.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace Mango.Web.Controllers
@@ -10,21 +13,27 @@ namespace Mango.Web.Controllers
     public class ShoppingCartController : Controller
     {
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IMessageBus _messageBus;
+        private readonly IAppSettings _appSettings;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
+        private readonly ResponseDto _response;
 
-        public ShoppingCartController(IShoppingCartService shoppingCartService)
+        public ShoppingCartController(IShoppingCartService shoppingCartService, IAppSettings appSettings, IMessageBus messageBus)
         {
             _shoppingCartService = shoppingCartService;
+            _messageBus = messageBus;
+            _appSettings = appSettings;
             _jsonSerializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            _response = new ResponseDto();
         }
 
         [Authorize]
         public async Task<IActionResult> ShoppingCartIndex()
         {
-            return View(await LoadShoppingCartFromLoggedUser());
+            return View(await LoadShoppingCartFromLoggedUser(null));
         }
 
-        private async Task<CartDto?> LoadShoppingCartFromLoggedUser()
+        private async Task<CartDto?> LoadShoppingCartFromLoggedUser(int? cartId = null)
         {
             CartDto? cartDto = null;
 
@@ -32,7 +41,16 @@ namespace Mango.Web.Controllers
 
             if(!string.IsNullOrEmpty(userId))
             {
-                var response = await _shoppingCartService.GetShoppingCartsAsync(userId);
+                ResponseDto? response;
+
+                if(cartId == null)
+                {
+                    response = await _shoppingCartService.GetShoppingCartsAsync(userId);
+                }
+                else
+                {
+                    response = await _shoppingCartService.GetShoppingCartAsync(userId, cartId.Value);
+                }
 
                 if(response != null && response.IsSuccess)
                 {
@@ -127,6 +145,44 @@ namespace Mango.Web.Controllers
             }
 
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EmailCart(CartDto cartDto)
+        {
+            var userId = User.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.UniqueName)?.Value;
+            var emailTo = User.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Email)?.Value;
+            var fullname = User.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Name)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var cart = await LoadShoppingCartFromLoggedUser(cartDto.CartHeader.CartHeaderId);
+
+                cart.EmailInfoDto = new EmailInfoDto
+                {
+                    EmailFrom = _appSettings.EmailFrom,
+                    EmailTo = emailTo,
+                    FullNane = fullname
+                };
+
+                var response = await _shoppingCartService.EmailCartAsync(cart);
+
+                if (response != null && response.IsSuccess)
+                {
+                    TempData["success"] = $"Email will send in few secondos...";
+                    return RedirectToAction(nameof(ShoppingCartIndex));
+                }
+                else
+                {
+                    TempData["error"] = $"Error Send Email: {response?.Message}";
+                }
+            }
+            else
+            {
+                RedirectToAction("Login", "Auth");
+            }
+
+            return RedirectToAction(nameof(ShoppingCartIndex));
         }
     }
 }

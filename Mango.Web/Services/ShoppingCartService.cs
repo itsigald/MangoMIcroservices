@@ -62,5 +62,15 @@ namespace Mango.Web.Services
                 Url = $"{_settings.ShoppingCartUrlBase}{_settings.ShoppingCartAPI}/RemoveCart"
             });
         }
+
+        public async Task<ResponseDto?> EmailCartAsync(CartDto cartDto)
+        {
+            return await _service.SendAsync(new RequestDto
+            {
+                ApiType = Utility.ApiType.POST,
+                Data = cartDto,
+                Url = $"{_settings.ShoppingCartUrlBase}{_settings.ShoppingCartAPI}/EmailCartRequest"
+            });
+        }
     }
 }

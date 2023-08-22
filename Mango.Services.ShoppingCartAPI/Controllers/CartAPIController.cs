@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.ProductAPI.Data;
 using Mango.Services.ShoppingCartAPI.Dtos;
 using Mango.Services.ShoppingCartAPI.Models;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 
@@ -21,14 +23,18 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private readonly IMapper _mapper;
         private readonly IProductService _productService;
         private readonly ICouponService _couponService;
+        private readonly IMessageBus _messageBus;
+        private readonly IMessageBusSetting _messageBusSetting;
         private ResponseDto _responseDto;
 
-        public CartAPIController(AppDbContext context, IMapper mapper, IProductService productService, ICouponService couponService)
+        public CartAPIController(AppDbContext context, IMapper mapper, IProductService productService, ICouponService couponService, IMessageBus messageBus, IMessageBusSetting messageBusSetting)
         {
             _context = context;
             _mapper = mapper;
             _productService = productService;
             _couponService = couponService;
+            _messageBus = messageBus;
+            _messageBusSetting = messageBusSetting;
             _responseDto = new ResponseDto();
         }
 
@@ -91,10 +97,12 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             {
                 var cartHeadersDto = _mapper.Map<CartHeaderDto>(await _context.CartHeaders
                     .FirstOrDefaultAsync(x => x.UserId == userId && x.IsDeleted == false && x.IsOpen == true));
-                
-                var cartDetailsDto = _mapper.Map<IEnumerable<CartDetailsDto>>(await _context.CartDetails
+
+                var cartDetailsDB = await _context.CartDetails
                     .Where(x => x.CartHeaderId == cartHeadersDto.CartHeaderId && x.IsDeleted == false)
-                    .ToListAsync());
+                    .ToListAsync();
+
+                var cartDetailsDto = _mapper.Map<IEnumerable<CartDetailsDto>>(cartDetailsDB);
 
                 var products = await _productService.GetProducts();
 
@@ -131,7 +139,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("CartUpsert")]
-        public async Task<ResponseDto> CartUpsert ([FromBody] CartDto cartDto)
+        public async Task<ResponseDto> CartUpsert([FromBody] CartDto cartDto)
         {
             if(cartDto == null || cartDto.CartHeader == null || cartDto.CartDetails == null || cartDto.CartDetails.Count() == 0)
             {
@@ -289,6 +297,23 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                     _responseDto.IsSuccess = false;
                     _responseDto.Message = $"The Cart doesn't exists";
                 }
+            }
+            catch (Exception ex)
+            {
+                _responseDto.IsSuccess = false;
+                _responseDto.Message = ex.Message;
+            }
+
+            return _responseDto;
+        }
+
+        [HttpPost("EmailCartRequest")]
+        public async Task<ResponseDto> EmailCartRequest([FromBody] CartDto cartDto)
+        {
+            try
+            {
+                await _messageBus.PublishMessage(_messageBusSetting.TopicQueueName.EmailShoppingCart, cartDto);
+                _responseDto.IsSuccess = true;
             }
             catch (Exception ex)
             {

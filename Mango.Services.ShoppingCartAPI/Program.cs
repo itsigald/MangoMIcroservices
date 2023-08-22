@@ -8,6 +8,7 @@ using Mango.Services.ShoppingCartAPI.Dtos;
 using Mango.Services.ShoppingCartAPI.Extensions;
 using Mango.Services.ShoppingCartAPI.Services;
 using Mango.Services.ShoppingCartAPI.Utility;
+using Mango.MessageBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +24,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<BackendApiAuthenticationHttpClientHandler>();
+builder.Services.AddScoped<IMessageBus, MessageBus>();
 
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 builder.AddAppAuthentication(appSettings!);
+builder.Services.AddScoped<IMessageBusSetting>(s => new MessageBusSetting(appSettings));
 
 builder.Services.AddSingleton(mapper);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

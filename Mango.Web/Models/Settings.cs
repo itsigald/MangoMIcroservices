@@ -15,5 +15,7 @@
         public string ShoppingCartAPI { get; set; } = string.Empty;
 
         public List<string> Roles { get; set; } = new();
+
+        public string? EmailFrom { get; set; }
     }
 }

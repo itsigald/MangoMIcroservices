@@ -1,4 +1,6 @@
-﻿namespace Mango.Web.Interfaces
+﻿using Mango.Web.Models;
+
+namespace Mango.Web.Interfaces
 {
     public interface IAppSettings
     {
@@ -14,6 +16,8 @@
         string? ShoppingCartUrlBase { get; }
         string? ShoppingCartAPI { get; }
 
-        List<string> Roles { get; } 
+        List<string> Roles { get; }
+
+        public string? EmailFrom { get; }
     }
 }

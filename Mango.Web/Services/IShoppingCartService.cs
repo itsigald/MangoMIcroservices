@@ -9,5 +9,6 @@ namespace Mango.Web.Services
         Task<ResponseDto?> UpsertShoppingCartAsync(CartDto cartDto);
         Task<ResponseDto?> RemoveShoppingCartAsync(int cartId);
         Task<ResponseDto?> ApplyCouponAsync(ApplyCouponDto applyCouponDto);
+        Task<ResponseDto?> EmailCartAsync(CartDto cartDto);
     }
 }

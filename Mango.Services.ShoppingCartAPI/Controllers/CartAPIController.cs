@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Reflection.PortableExecutable;
@@ -149,10 +150,13 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             {
                 try
                 {
-                    //c.CartHeaderId == cartDto.CartHeader.CartHeaderId && 
+                    await using var transaction = _context.Database.CurrentTransaction == null
+                            ? await _context.Database.BeginTransactionAsync()
+                            : _context.Database.UseTransaction(_context.Database.CurrentTransaction.GetDbTransaction());
+
                     var cartHeader = await _context.CartHeaders
                         .FirstOrDefaultAsync(c => c.UserId == cartDto.CartHeader.UserId && c.IsOpen == true);
-
+                    
                     if(cartHeader == null)
                     {
                         CartHeader cartH = _mapper.Map<CartHeader>(cartDto.CartHeader);
@@ -220,6 +224,9 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                             cartDto.CartDetails = _mapper.Map<IEnumerable<CartDetailsDto>>(cartDetailsNew);
                         }
                     }
+
+                    if(transaction != null)
+                        await transaction.CommitAsync();
 
                     _responseDto.Result = cartDto;
                 }

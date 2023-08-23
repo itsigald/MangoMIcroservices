@@ -2,17 +2,23 @@
 using Mango.Services.EmailAPI.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Mango.Services.EmailAPI.Services
 {
     public class EmailService
     {
-        private readonly DbContextOptions<AppDbContext> _context;
+        private readonly AppDbContext _context;
 
-        public EmailService(DbContextOptions<AppDbContext> context)
+        public EmailService(string? connectionString)
         {
-            _context = context;
+            if(string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException(nameof(connectionString));
+
+            var optionBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            optionBuilder.UseSqlServer(connectionString);
+            _context = new AppDbContext(optionBuilder.Options);
         }
 
         public async Task EmailCartAndLog(CartDto? cartDto)
@@ -82,9 +88,9 @@ namespace Mango.Services.EmailAPI.Services
                     Message = message
                 };
 
-                await using var _db = new AppDbContext(_context);
-                await _db.EmailLoggers.AddAsync(emailLog);
-                await _db.SaveChangesAsync();
+                await _context.EmailLoggers.AddAsync(emailLog);
+                await _context.SaveChangesAsync();
+
                 return true;
             }
             catch (Exception ex)

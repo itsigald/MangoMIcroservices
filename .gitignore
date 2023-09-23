@@ -3,7 +3,7 @@
 ################################################################################
 
 /youtube.txt
-/.vs/*
+/.vs
 /Mango.Services.ProductAPI/obj
 /Mango.Services.ProductAPI/bin
 /Mango.Services.AuthAPI/obj
